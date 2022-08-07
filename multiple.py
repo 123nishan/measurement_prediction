@@ -37,8 +37,8 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
             # target size: 34,5
             loss = criterion(output, target)
 
-            print(output[:, 0])
-            print("------------------------------------------------------")
+            # print(output[:, 0])
+            # print("------------------------------------------------------")
             # loss_hip=criterion(output[:,0], target[:,0])
             hip_loss += sum(output[:, 0])
             # hip_loss+=loss_hip.item()
@@ -52,7 +52,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
             # if batch_idx==4:
             #     print("size of output:",output.shape)
             train_loss += loss.item()
-            print(train_loss)
+            # print(train_loss)
 
         #####################
         # Validating the model#
@@ -68,7 +68,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
                 # writer_validation.add_scalar('valid', loss, i)
                 # writer_validation.flush()
                 # update average validation loss
-                valid_loss += loss.item()
+                valid_loss += loss.item() #loss is tensor, so loss.item() is a float
                 # valid_loss = valid_loss + ((1 / (batch_idx + 1)) * (loss.item() - valid_loss))
                 # valid_loss+=loss.item()*features.size(0)
                 # print(batch_idx)
@@ -82,7 +82,8 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
                 #         print("output",output_unscaled)  # last batch of last epoch
 
         # calculate average losses
-        train_loss = train_loss / len(train_loader)
+        train_loss = train_loss / len(train_loader) #len(train_loader) is the number of batches
+
         valid_loss = valid_loss / len(test_loader)
         hip_loss = hip_loss / len(train_loader)
         hipLosses.append(hip_loss)
@@ -102,27 +103,43 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 
 def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
     # Scale
-    scaler = preprocessing.StandardScaler()
-    output_scaler = preprocessing.StandardScaler()
+    print("TESTING")
     y_test = pd.DataFrame(y_test)
 
     X_test_scaled = scaler.transform(X_test.values)
 
-    y_test_scaled = output_scaler.transform(y_test.values)
+    #y_test_scaled = output_scaler.transform(y_test.values)
 
     X_test_scaled_data = pd.DataFrame(X_test_scaled, columns=X_test.columns)
-    Test_data = pd.concat([X_test_scaled_data, pd.DataFrame(y_test_scaled, columns=y_test.columns)], axis=1)
+    Test_data = pd.concat([X_test_scaled_data, pd.DataFrame(y_test.values, columns=y_test.columns)], axis=1)
     test_data = multiple_dataloader.CustomDataset(Test_data)
-    train_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
+    test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
     model.eval()
     test_loss = 0.0
+    avg_values=[]
     with torch.no_grad():
-        for batch_idx, (features, target) in enumerate(train_loader):
+        for batch_idx, (features, target) in enumerate(test_loader):
             output, _ = model(features)
             target = target.float()
-            loss = criterion(output, target)
-            print(output[:, 0])
-            print("------------------------------------------------------")
+            output = output_scaler.inverse_transform(output.detach().numpy())
+
+            error=np.absolute(np.subtract(output,target.detach().numpy()))
+            print("output",output)
+            print("target",target.detach().numpy())
+            print("error",error)
+
+            print("------------------------")
+
+            avg_values.append((np.average(error,axis=0)).tolist())
+            # print(output)
+            # loss = criterion(output, target)
+            #
+            #
+            # test_loss += loss.item()
+
+            # print(output)
+            # print(output[:, 0]) #output of column index 0
+            #print("------------------------------------------------------")
             # loss_hip=criterion(output[:,0], target[:,0])
             #hip_loss += sum(output[:, 0])
             # hip_loss+=loss_hip.item()
@@ -136,11 +153,15 @@ def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
             # train_loss += loss.item()
             # print(train_loss)
 
+    avg_values=np.array(avg_values)
+    avg_values=avg_values.mean(axis=0)
+    #avg_error = output_scaler.inverse_transform(np.array(avg_values))
+    print("avg_values",avg_values/10)
 
 
 
 if __name__ == '__main__':
-    data, total_features, output = handle_data()
+    data, total_features,output = handle_data()
     features = data.columns.tolist()
 
     target = features[-5:]  # get last column
@@ -195,11 +216,11 @@ if __name__ == '__main__':
     optimizer = optim.SGD(model.parameters(), lr=0.01)
     criterion = nn.L1Loss()  # Mean Absolute Error
 
-    figure, axis = plt.subplots(1, 2, figsize=(10, 10))
+    #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
     trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, eval_loader)
     test_model(X_test, y_test, scaler, output_scaler,model,criterion)
-    axis[0].plot(trainLosses, label="Training Loss")
-    axis[0].plot(validLosses, label="Validation Loss")
+    # axis[0].plot(trainLosses, label="Training Loss")
+    # axis[0].plot(validLosses, label="Validation Loss")
     # axis[1].plot(hiplosses,label="Hip Loss")
     # axis[0].xlabel("Epochs")
     # axis[0].ylabel("Loss")
@@ -207,5 +228,7 @@ if __name__ == '__main__':
     # plt.plot(validLosses, label='Validation Loss')
     # plt.xlabel('epochs', fontsize=18)
     # plt.ylabel('average loss', fontsize=16)
+    plt.plot (trainLosses, label='Training Loss')
+    plt.plot (validLosses, label='Validation Loss')
     plt.legend()
     plt.show()

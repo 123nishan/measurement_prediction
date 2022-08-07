@@ -16,3 +16,4 @@ neck='Neck Base Circumference (mm)'
 hip= 'Hip Circumference, Maximum (mm)'
 chest='Chest Circumference (mm)'
 crotch_height='Crotch Height (mm)'
+shoe_size_italy="Shoe Size IT"

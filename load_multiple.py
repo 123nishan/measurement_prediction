@@ -37,7 +37,7 @@ while repeat=="y":
 
     output,_=model(scale_data.float())
 
-
+    print(output.detach().numpy())
     output_scaler=load(open('multiple_output_scaler.pkl','rb'))
     output=output_scaler.inverse_transform(output.detach().numpy()) #working fine
     print("chest, crotch ht,hip,neck,wasit",output)
