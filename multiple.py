@@ -19,6 +19,7 @@ from sklearn import preprocessing
 from pickle import dump
 import matplotlib.pyplot as plt
 
+
 def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=1000):
     train_loss = 0.0
     # writer = SummaryWriter()
@@ -26,20 +27,20 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
     valid_loss = 0.0
     trainLosses = []
     validLosses = []
-    hip_loss=0.0
-    hipLosses=[]
+    hip_loss = 0.0
+    hipLosses = []
     valid_loss_min = np.Inf
     for i in range(epochs):
         model.train()
         for batch_idx, (features, target) in enumerate(train_loader):
             output, _ = model(features)
-            #target size: 34,5
+            # target size: 34,5
             loss = criterion(output, target)
 
-            print(output[:,0])
+            print(output[:, 0])
             print("------------------------------------------------------")
-            #loss_hip=criterion(output[:,0], target[:,0])
-            hip_loss+=sum(output[:,0])
+            # loss_hip=criterion(output[:,0], target[:,0])
+            hip_loss += sum(output[:, 0])
             # hip_loss+=loss_hip.item()
 
             # writer.add_scalar('train', loss, i)
@@ -52,7 +53,6 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
             #     print("size of output:",output.shape)
             train_loss += loss.item()
             print(train_loss)
-
 
         #####################
         # Validating the model#
@@ -84,7 +84,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
         # calculate average losses
         train_loss = train_loss / len(train_loader)
         valid_loss = valid_loss / len(test_loader)
-        hip_loss=hip_loss/len(train_loader)
+        hip_loss = hip_loss / len(train_loader)
         hipLosses.append(hip_loss)
         trainLosses.append(train_loss)
         validLosses.append(valid_loss)
@@ -96,11 +96,51 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
             torch.save(model.state_dict(), 'multiple_model.pt')
             valid_loss_min = valid_loss
 
-    #writer.close()
-    return trainLosses, validLosses,hipLosses
+    # writer.close()
+    return trainLosses, validLosses, hipLosses
+
+
+def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
+    # Scale
+    scaler = preprocessing.StandardScaler()
+    output_scaler = preprocessing.StandardScaler()
+    y_test = pd.DataFrame(y_test)
+
+    X_test_scaled = scaler.transform(X_test.values)
+
+    y_test_scaled = output_scaler.transform(y_test.values)
+
+    X_test_scaled_data = pd.DataFrame(X_test_scaled, columns=X_test.columns)
+    Test_data = pd.concat([X_test_scaled_data, pd.DataFrame(y_test_scaled, columns=y_test.columns)], axis=1)
+    test_data = multiple_dataloader.CustomDataset(Test_data)
+    train_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
+    model.eval()
+    test_loss = 0.0
+    with torch.no_grad():
+        for batch_idx, (features, target) in enumerate(train_loader):
+            output, _ = model(features)
+            target = target.float()
+            loss = criterion(output, target)
+            print(output[:, 0])
+            print("------------------------------------------------------")
+            # loss_hip=criterion(output[:,0], target[:,0])
+            #hip_loss += sum(output[:, 0])
+            # hip_loss+=loss_hip.item()
+            # writer.add_scalar('train', loss, i)
+            # writer.flush()
+            # optimizer.zero_grad()
+            # loss.backward()
+            # optimizer.step()
+            # if batch_idx==4:
+            #     print("size of output:",output.shape)
+            # train_loss += loss.item()
+            # print(train_loss)
+
+
+
 
 if __name__ == '__main__':
-    data, total_features,output = handle_data()
+    data, total_features, output = handle_data()
     features = data.columns.tolist()
 
     target = features[-5:]  # get last column
@@ -111,30 +151,33 @@ if __name__ == '__main__':
     X = data[features]
     y = data[target]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
+
+    X_train, X_eval, y_train, y_eval = train_test_split(X_train, y_train, test_size=0.15, random_state=42)
 
     # define scalar
 
     scaler = preprocessing.StandardScaler()
     y_train = pd.DataFrame(y_train)
-    y_test = pd.DataFrame(y_test)
+    y_eval = pd.DataFrame(y_eval)
     output_scaler = preprocessing.StandardScaler()
     scaler.fit(X_train.values)
     output_scaler.fit(y_train.values)
     X_train_scaled = scaler.transform(X_train.values)
-    X_test_scaled = scaler.transform(X_test.values)
+    X_eval_scaled = scaler.transform(X_eval.values)
     #
 
+
     y_train_scaled = output_scaler.transform(y_train.values)
-    y_test_scaled = output_scaler.transform(y_test.values)
+    y_eval_scaled = output_scaler.transform(y_eval.values)
 
     X_train_scaled_data = pd.DataFrame(X_train_scaled, columns=X_train.columns)
-    X_test_scaled_data = pd.DataFrame(X_test_scaled, columns=X_test.columns)
+    X_eval_scaled_data = pd.DataFrame(X_eval_scaled, columns=X_test.columns)
 
     # Train_data = pd.concat([X_train, pd.DataFrame(y_train)], axis=1)
     # Valid_data = pd.concat([X_test, pd.DataFrame(y_test)], axis=1)
-    Train_data = pd.concat([X_train_scaled_data, pd.DataFrame(y_train_scaled,columns=y_train.columns)], axis=1)
-    Valid_data = pd.concat([X_test_scaled_data, pd.DataFrame(y_test_scaled,columns=y_test.columns)], axis=1)
+    Train_data = pd.concat([X_train_scaled_data, pd.DataFrame(y_train_scaled, columns=y_train.columns)], axis=1)
+    Valid_data = pd.concat([X_eval_scaled_data, pd.DataFrame(y_eval_scaled, columns=y_test.columns)], axis=1)
 
     # scaler.fit(Train_data)
     # Train_data_scaled = scaler.transform(Train_data.values)
@@ -143,20 +186,21 @@ if __name__ == '__main__':
     dump(output_scaler, open('multiple_output_scaler.pkl', 'wb'))
 
     train_data = multiple_dataloader.CustomDataset(Train_data)
-    test_data = multiple_dataloader.CustomDataset(Valid_data)
+    eval_data = multiple_dataloader.CustomDataset(Valid_data)
 
     train_loader = DataLoader(dataset=train_data, batch_size=32, shuffle=True)
-    test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
+    eval_loader = DataLoader(dataset=eval_data, batch_size=32, shuffle=True)
 
     model = Model(total_features, output)
     optimizer = optim.SGD(model.parameters(), lr=0.01)
     criterion = nn.L1Loss()  # Mean Absolute Error
 
-    figure,axis= plt.subplots(1,2,figsize=(10,10))
-    trainLosses, validLosses,hiplosses = TrainModel(model, criterion, optimizer, train_loader, test_loader)
-    axis[0].plot(trainLosses,label="Training Loss")
-    axis[0].plot(validLosses,label="Validation Loss")
-    #axis[1].plot(hiplosses,label="Hip Loss")
+    figure, axis = plt.subplots(1, 2, figsize=(10, 10))
+    trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, eval_loader)
+    test_model(X_test, y_test, scaler, output_scaler,model,criterion)
+    axis[0].plot(trainLosses, label="Training Loss")
+    axis[0].plot(validLosses, label="Validation Loss")
+    # axis[1].plot(hiplosses,label="Hip Loss")
     # axis[0].xlabel("Epochs")
     # axis[0].ylabel("Loss")
     # plt.plot(trainLosses, label='Training Loss')
@@ -165,4 +209,3 @@ if __name__ == '__main__':
     # plt.ylabel('average loss', fontsize=16)
     plt.legend()
     plt.show()
-
