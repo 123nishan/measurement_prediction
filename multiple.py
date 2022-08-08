@@ -117,6 +117,8 @@ def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
     model.eval()
     test_loss = 0.0
     avg_values=[]
+    all_pred=[]
+    all_output=[]
     with torch.no_grad():
         for batch_idx, (features, target) in enumerate(test_loader):
             output, _ = model(features)
@@ -124,11 +126,8 @@ def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
             output = output_scaler.inverse_transform(output.detach().numpy())
 
             error=np.absolute(np.subtract(output,target.detach().numpy()))
-            print("output",output)
-            print("target",target.detach().numpy())
-            print("error",error)
-
-            print("------------------------")
+            all_pred.append(output.tolist())
+            all_output.append(target.detach().numpy().tolist())
 
             avg_values.append((np.average(error,axis=0)).tolist())
             # print(output)
@@ -155,6 +154,11 @@ def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
 
     avg_values=np.array(avg_values)
     avg_values=avg_values.mean(axis=0)
+    twoD_pred=[elem for twod in all_pred for elem in twod]
+    twoD_output=[elem for twod in all_output for elem in twod]
+
+    print(twoD_output)
+    print(twoD_pred)
     #avg_error = output_scaler.inverse_transform(np.array(avg_values))
     print("avg_values",avg_values/10)
 
