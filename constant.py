@@ -10,6 +10,7 @@ gender = 'Gender'
 height = 'Reported Height (cm)'
 weight = 'Reported Weight (kg)'
 shoe_size = 'Shoe Size NL'
+
 #measurements
 waist = 'Waist Circumference, Pref (mm)'
 neck='Neck Base Circumference (mm)'
@@ -17,3 +18,5 @@ hip= 'Hip Circumference, Maximum (mm)'
 chest='Chest Circumference (mm)'
 crotch_height='Crotch Height (mm)'
 shoe_size_italy="Shoe Size IT"
+female_chest='Chest Girth (Chest Circumference at Scye) (mm)'
+chest_italy='Chest Girth at Scye (Chest Circumference at Scye) (mm)'

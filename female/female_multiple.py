@@ -14,7 +14,7 @@ from constant import *
 from nn import Model
 # from tqdm import tqdm
 import time
-from multiple_data import handle_data,handle_split_data
+from female_data import handle_split_data
 from sklearn import preprocessing
 from pickle import dump
 import matplotlib.pyplot as plt
@@ -94,85 +94,26 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 
         if valid_loss <= valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}). Saving model ...'.format(valid_loss_min, valid_loss))
-            torch.save(model.state_dict(), 'multiple_model_DI.pt')
+            torch.save(model.state_dict(), 'multiple_model_female.pt')
             valid_loss_min = valid_loss
 
     # writer.close()
     return trainLosses, validLosses, hipLosses
 
 
-# def test_model(X_test, y_test, scaler, output_scaler,model,criterion):
-#     # Scale
-#     print("TESTING")
-#     y_test = pd.DataFrame(y_test)
-#
-#     X_test_scaled = scaler.transform(X_test.values)
-#
-#     #y_test_scaled = output_scaler.transform(y_test.values)
-#
-#     X_test_scaled_data = pd.DataFrame(X_test_scaled, columns=X_test.columns)
-#     Test_data = pd.concat([X_test_scaled_data, pd.DataFrame(y_test.values, columns=y_test.columns)], axis=1)
-#     test_data = multiple_dataloader.CustomDataset(Test_data)
-#     test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
-#     model.eval()
-#     test_loss = 0.0
-#     avg_values=[]
-#     all_pred=[]
-#     all_output=[]
-#     with torch.no_grad():
-#         for batch_idx, (features, target) in enumerate(test_loader):
-#             output, _ = model(features)
-#             target = target.float()
-#             output = output_scaler.inverse_transform(output.detach().numpy())
-#
-#             error=np.absolute(np.subtract(output,target.detach().numpy()))
-#             all_pred.append(output.tolist())
-#             all_output.append(target.detach().numpy().tolist())
-#
-#             avg_values.append((np.average(error,axis=0)).tolist())
-#             # print(output)
-#             # loss = criterion(output, target)
-#             #
-#             #
-#             # test_loss += loss.item()
-#
-#             # print(output)
-#             # print(output[:, 0]) #output of column index 0
-#             #print("------------------------------------------------------")
-#             # loss_hip=criterion(output[:,0], target[:,0])
-#             #hip_loss += sum(output[:, 0])
-#             # hip_loss+=loss_hip.item()
-#             # writer.add_scalar('train', loss, i)
-#             # writer.flush()
-#             # optimizer.zero_grad()
-#             # loss.backward()
-#             # optimizer.step()
-#             # if batch_idx==4:
-#             #     print("size of output:",output.shape)
-#             # train_loss += loss.item()
-#             # print(train_loss)
-#
-#     avg_values=np.array(avg_values)
-#     avg_values=avg_values.mean(axis=0)
-#     twoD_pred=[elem for twod in all_pred for elem in twod]
-#     twoD_output=[elem for twod in all_output for elem in twod]
-#
-#     print(twoD_output)
-#     print(twoD_pred)
-#     #avg_error = output_scaler.inverse_transform(np.array(avg_values))
-#     print("avg_values",avg_values/10)
+
 
 def test_model(test_loader,features_column,target_column):
     print("Testing")
 
     test_model= Model(4,5)
-    test_model.load_state_dict(torch.load("multiple_model_DI.pt"))
+    test_model.load_state_dict(torch.load("multiple_model_female.pt"))
     test_model.eval()
     test_loss = 0.0
     avg_values = []
     all_pred = []
     all_target = []
-    output_scaler = load(open('multiple_output_scaler.pkl', 'rb'))
+    output_scaler = load(open('multiple_output_scaler_female.pkl', 'rb'))
     with torch.no_grad():
         for batch_idx, (features, target) in enumerate(test_loader):
             output, _ = test_model(features)
@@ -184,27 +125,6 @@ def test_model(test_loader,features_column,target_column):
             all_target.append(target.detach().numpy().tolist())
 
             avg_values.append((np.average(error, axis=0)).tolist())
-            # print(output)
-            # loss = criterion(output, target)
-            #
-            #
-            # test_loss += loss.item()
-
-            # print(output)
-            # print(output[:, 0]) #output of column index 0
-            # print("------------------------------------------------------")
-            # loss_hip=criterion(output[:,0], target[:,0])
-            # hip_loss += sum(output[:, 0])
-            # hip_loss+=loss_hip.item()
-            # writer.add_scalar('train', loss, i)
-            # writer.flush()
-            # optimizer.zero_grad()
-            # loss.backward()
-            # optimizer.step()
-            # if batch_idx==4:
-            #     print("size of output:",output.shape)
-            # train_loss += loss.item()
-            # print(train_loss)
 
     avg_values = np.array(avg_values)
     avg_values = avg_values.mean(axis=0)
@@ -218,7 +138,7 @@ def test_model(test_loader,features_column,target_column):
     print("avg_values", avg_values / 10)
 
 
-    with open('male_pred.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('female_pred.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the header
@@ -227,7 +147,7 @@ def test_model(test_loader,features_column,target_column):
         # write multiple rows
         writer.writerows(twoD_pred)
 
-    with open('male_target.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('female_target.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the header
@@ -249,7 +169,7 @@ if __name__ == '__main__':
     #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
 
 
-    #trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
+    # trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
 
 
     # test_model(X_test, y_test, scaler, output_scaler,model,criterion)
