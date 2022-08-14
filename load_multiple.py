@@ -19,7 +19,7 @@ while repeat=="y":
     # crotch_height=float(input('Enter Crotch Height (mm)'))
     input_data = torch.tensor([[age, height, weight, shoe_size]])
     #'Age (Years)', 'Reported Height (cm)', 'Reported Weight (kg)', 'Shoe Size NL', 'Chest Circumference (mm)', 'Neck Base Circumference (mm)'
-    model = Model(len(input_data),len(measurement))
+    model = Model(len(demographic),len(measurement))
     model.load_state_dict(torch.load("multiple_model_DI.pt"))
     model.eval()
 
@@ -43,8 +43,10 @@ while repeat=="y":
     print(output.detach().numpy())
     output_scaler=load(open('multiple_output_scaler.pkl','rb'))
     output=output_scaler.inverse_transform(output.detach().numpy()) #working fine
+
+    []
     # print("chest, crotch ht,hip,neck,wasit all in cm",output/25.4)
-    print("Waist, Chest ,Neck,Hip,Crotch Height all in cm", output / 10)
+    print("Waist Circumference, Pref (mm), Chest Circumference (mm), Neck Base Circumference (mm),Hip Circumference, Maximum (mm), Crotch Height (mm), Thigh Circumference (mm), Shoulder Breadth (mm), Waist Height, Preferred (mm), Arm Length (Shoulder to Wrist) (mm) all in cm", output / 10)
 
     repeat=input("Do you want to repeat? (y/n) ")
 
