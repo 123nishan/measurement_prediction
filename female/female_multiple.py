@@ -169,7 +169,7 @@ if __name__ == '__main__':
     #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
 
 
-    # trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
+    trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
 
 
     # test_model(X_test, y_test, scaler, output_scaler,model,criterion)
@@ -181,9 +181,9 @@ if __name__ == '__main__':
     # axis[0].ylabel("Loss")
     # plt.plot(trainLosses, label='Training Loss')
     # plt.plot(validLosses, label='Validation Loss')
-    # plt.xlabel('epochs', fontsize=18)
-    # plt.ylabel('average loss', fontsize=16)
-    # plt.plot (trainLosses, label='Training Loss')
-    # plt.plot (validLosses, label='Validation Loss')
-    # plt.legend()
-    # plt.show()
+    plt.xlabel('epochs', fontsize=18)
+    plt.ylabel('average loss', fontsize=16)
+    plt.plot (trainLosses, label='Training Loss')
+    plt.plot (validLosses, label='Validation Loss')
+    plt.legend()
+    plt.show()

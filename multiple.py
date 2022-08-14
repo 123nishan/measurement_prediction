@@ -33,7 +33,9 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
     for i in range(epochs):
         model.train()
         for batch_idx, (features, target) in enumerate(train_loader):
+
             output, _ = model(features)
+
             # target size: 34,5
             loss = criterion(output, target)
 
@@ -165,7 +167,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 def test_model(test_loader,features_column,target_column):
     print("Testing")
 
-    test_model= Model(4,5)
+    test_model= Model(len(features_column),len(target_column))
     test_model.load_state_dict(torch.load("multiple_model_DI.pt"))
     test_model.eval()
     test_loss = 0.0
@@ -249,7 +251,7 @@ if __name__ == '__main__':
     #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
 
 
-    #trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
+    trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
 
 
     # test_model(X_test, y_test, scaler, output_scaler,model,criterion)
@@ -261,9 +263,11 @@ if __name__ == '__main__':
     # axis[0].ylabel("Loss")
     # plt.plot(trainLosses, label='Training Loss')
     # plt.plot(validLosses, label='Validation Loss')
-    # plt.xlabel('epochs', fontsize=18)
-    # plt.ylabel('average loss', fontsize=16)
-    # plt.plot (trainLosses, label='Training Loss')
-    # plt.plot (validLosses, label='Validation Loss')
-    # plt.legend()
-    # plt.show()
+
+
+    plt.xlabel('epochs', fontsize=18)
+    plt.ylabel('average loss', fontsize=16)
+    plt.plot (trainLosses, label='Training Loss')
+    plt.plot (validLosses, label='Validation Loss')
+    plt.legend()
+    plt.show()

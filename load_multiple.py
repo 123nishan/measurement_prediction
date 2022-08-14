@@ -1,6 +1,7 @@
 import torch
 from nn import Model
 from pickle import load
+from constant import *
 import numpy as np
 from numpy import asarray
 from sklearn import preprocessing
@@ -16,11 +17,12 @@ while repeat=="y":
 
     # hip= float(input('Enter Hip Circumference, Maximum (mm)'))
     # crotch_height=float(input('Enter Crotch Height (mm)'))
+    input_data = torch.tensor([[age, height, weight, shoe_size]])
     #'Age (Years)', 'Reported Height (cm)', 'Reported Weight (kg)', 'Shoe Size NL', 'Chest Circumference (mm)', 'Neck Base Circumference (mm)'
-    model = Model(4,5)
+    model = Model(len(input_data),len(measurement))
     model.load_state_dict(torch.load("multiple_model_DI.pt"))
     model.eval()
-    input_data = torch.tensor([[age,height,weight,shoe_size]])
+
     # #array order: neck,shoe,height,age,weight,chest
     # input_data=torch.tensor([[44,56,82,983,187,492]])
     # new=torch.tensor([[56,187,82,44,983,492]]) #856
@@ -42,7 +44,7 @@ while repeat=="y":
     output_scaler=load(open('multiple_output_scaler.pkl','rb'))
     output=output_scaler.inverse_transform(output.detach().numpy()) #working fine
     # print("chest, crotch ht,hip,neck,wasit all in cm",output/25.4)
-    print("Waist, Chest ,Neck,Hip,Crotch Height all in cm", output / 25.4)
+    print("Waist, Chest ,Neck,Hip,Crotch Height all in cm", output / 10)
 
     repeat=input("Do you want to repeat? (y/n) ")
 

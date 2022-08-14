@@ -20,3 +20,10 @@ crotch_height='Crotch Height (mm)'
 shoe_size_italy="Shoe Size IT"
 female_chest='Chest Girth (Chest Circumference at Scye) (mm)'
 chest_italy='Chest Girth at Scye (Chest Circumference at Scye) (mm)'
+
+thigh='Thigh Circumference (mm)'
+shoulder_breadth='Shoulder Breadth (mm)'
+waist_floor='Waist Height, Preferred (mm)'
+arm_length='Arm Length (Shoulder to Wrist) (mm)'
+demographic = [ age, height, weight, shoe_size]
+measurement = [ waist,chest,neck,hip,crotch_height,thigh,shoulder_breadth,waist_floor,arm_length]

@@ -7,10 +7,14 @@ class Model(nn.Module):
         super().__init__()
         self.fc1=nn.Linear(input_size,10)
         self.fc1_bn=nn.BatchNorm1d(10)
-        self.fc2=nn.Linear(10,8)
-        self.fc2_bn=nn.BatchNorm1d(8)
+        self.fc2=nn.Linear(10,10)
+        self.fc2_bn=nn.BatchNorm1d(10)
+
+        self.fc3 = nn.Linear(10, 10)
+        self.fc3_bn = nn.BatchNorm1d(8)
+
         # self.fc3=nn.Linear(8,8)
-        self.fc4=nn.Linear(8,output_size)
+        self.fc4=nn.Linear(10,output_size)
         self.relu=nn.ReLU()
         #define dropout
         self.dropout=nn.Dropout(0.25)
@@ -31,7 +35,8 @@ class Model(nn.Module):
         x=self.fc2(h_1)
         h_2=self.relu(self.fc2_bn(x))
         #h_2=self.dropout(h_2)
-        # h_3=self.relu(self.fc3(h_2))
-        out=self.fc4(h_2)
-        return out,h_2
+        x=self.fc3(h_2)
+        h_3=self.relu(self.fc3(x))
+        out=self.fc4(h_3)
+        return out,h_3
 

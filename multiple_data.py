@@ -52,8 +52,8 @@ def handle_data(normalize=True):
 
 
 def handle_split_data():
-    demographic = [ age, height, weight, shoe_size]
-    measurement = [ waist,chest,neck,hip,crotch_height]
+
+
 
 
 
