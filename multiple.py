@@ -212,19 +212,31 @@ def test_model(test_loader,features_column,target_column):
     avg_values = avg_values.mean(axis=0)
     twoD_pred = [elem for twod in all_pred for elem in twod]
     twoD_target = [elem for twod in all_target for elem in twod]
+    # print(twoD_pred[0])
+    twoD_pred=np.array(twoD_pred)
 
 
-    print(twoD_target)
-    print(twoD_pred)
+    outerInseam=np.subtract(twoD_pred[:,7],twoD_pred[:,10])
+    innerInseam=np.subtract(twoD_pred[:,4],twoD_pred[:,11])
+
+    #
+    # print(twoD_target)
+    # print(twoD_pred)
     # avg_error = output_scaler.inverse_transform(np.array(avg_values))
     print("avg_values", avg_values / 10)
+    target_column_prediction=target_column.copy()
+    target_column_prediction.append(outer_inseam)
+    target_column_prediction.append(inner_inseam)
 
+    np.append(twoD_pred,outerInseam)
 
+    (np.append(twoD_pred,innerInseam))
+    # print(twoD_pred)
     with open('male_pred.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the header
-        writer.writerow(target_column)
+        writer.writerow(target_column_prediction)
 
         # write multiple rows
         writer.writerows(twoD_pred)
@@ -251,7 +263,7 @@ if __name__ == '__main__':
     #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
 
 
-    trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
+    #trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
 
 
     # test_model(X_test, y_test, scaler, output_scaler,model,criterion)
@@ -265,9 +277,9 @@ if __name__ == '__main__':
     # plt.plot(validLosses, label='Validation Loss')
 
 
-    plt.xlabel('epochs', fontsize=18)
-    plt.ylabel('average loss', fontsize=16)
-    plt.plot (trainLosses, label='Training Loss')
-    plt.plot (validLosses, label='Validation Loss')
-    plt.legend()
-    plt.show()
+   # Loss plt.xlabel('epochs', fontsize=18)
+   #  plt.ylabel('average loss', fontsize=16)
+   #  plt.plot (trainLosses, label='Training Loss')
+   #  plt.plot (validLosses, label='Validation Loss')
+   #  plt.legend()
+   #  plt.show()
