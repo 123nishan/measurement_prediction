@@ -218,6 +218,8 @@ def test_model(test_loader,features_column,target_column):
 
     outerInseam=np.subtract(twoD_pred[:,7],twoD_pred[:,10])
     innerInseam=np.subtract(twoD_pred[:,4],twoD_pred[:,11])
+    outerInseam=np.reshape(outerInseam,(-1,1))
+    innerInseam=np.reshape(innerInseam,(-1,1))
 
     #
     # print(twoD_target)
@@ -228,10 +230,10 @@ def test_model(test_loader,features_column,target_column):
     target_column_prediction.append(outer_inseam)
     target_column_prediction.append(inner_inseam)
 
-    np.append(twoD_pred,outerInseam)
+    twoD_pred=np.append(twoD_pred,outerInseam,axis=1)
 
-    (np.append(twoD_pred,innerInseam))
-    # print(twoD_pred)
+    twoD_pred=np.append(twoD_pred,innerInseam,axis=1)
+
     with open('male_pred.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
