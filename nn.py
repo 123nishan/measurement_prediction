@@ -11,7 +11,7 @@ class Model(nn.Module):
         self.fc2_bn=nn.BatchNorm1d(10)
 
         self.fc3 = nn.Linear(10, 10)
-        self.fc3_bn = nn.BatchNorm1d(8)
+        self.fc3_bn = nn.BatchNorm1d(10)
 
         # self.fc3=nn.Linear(8,8)
         self.fc4=nn.Linear(10,output_size)
@@ -36,7 +36,7 @@ class Model(nn.Module):
         h_2=self.relu(self.fc2_bn(x))
         #h_2=self.dropout(h_2)
         x=self.fc3(h_2)
-        h_3=self.relu(self.fc3(x))
+        h_3=self.relu(self.fc3_bn(x))
         out=self.fc4(h_3)
         return out,h_3
 

@@ -11,7 +11,7 @@ from constant import *
 # crotch_height='Crotch Height (mm)'
 class CustomDataset(Dataset):
     def __init__(self, data):
-        to_convert=[height,weight,shoe_size,neck,female_chest,waist,crotch_height]
+        to_convert=female_measurement
         for i in to_convert:
             data[i] =pd.to_numeric(data[i],errors='coerce')
         self.data = torch.FloatTensor(data.values.astype(np.float32))
@@ -21,6 +21,6 @@ class CustomDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        target = self.data[idx][-5:]
-        data_val = self.data[idx][:-5]
+        target = self.data[idx][-len(female_measurement):]
+        data_val = self.data[idx][:-len(female_measurement)]
         return data_val, target

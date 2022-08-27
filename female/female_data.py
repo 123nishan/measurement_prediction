@@ -7,16 +7,16 @@ from sklearn import preprocessing
 from pickle import dump
 
 def handle_split_data():
-    demographic = [age, height, weight, shoe_size]
-    measurement = [waist, female_chest, neck, hip, crotch_height]
+    # demographic = [age, height, weight, shoe_size]
+    # measurement = [waist, female_chest, neck, hip, crotch_height]
     X_train = pd.read_csv("X_train.csv", skipinitialspace=True, usecols=demographic)
-    y_train = pd.read_csv("y_train.csv", skipinitialspace=True, usecols=measurement)
+    y_train = pd.read_csv("y_train.csv", skipinitialspace=True, usecols=female_measurement)
 
     X_val = pd.read_csv("X_val.csv", skipinitialspace=True, usecols=demographic)
-    y_val = pd.read_csv("y_val.csv", skipinitialspace=True, usecols=measurement)
+    y_val = pd.read_csv("y_val.csv", skipinitialspace=True, usecols=female_measurement)
 
     X_test = pd.read_csv("X_test.csv", skipinitialspace=True, usecols=demographic)
-    y_test = pd.read_csv("y_test.csv", skipinitialspace=True, usecols=measurement)
+    y_test = pd.read_csv("y_test.csv", skipinitialspace=True, usecols=female_measurement)
 
     scaler = preprocessing.StandardScaler()
     output_scaler = preprocessing.StandardScaler()
@@ -52,7 +52,7 @@ def handle_split_data():
     dump(scaler, open('multiple_scaler_female.pkl', 'wb'))
     dump(output_scaler, open('multiple_output_scaler_female.pkl', 'wb'))
 
-    return train_loader, val_loader, test_loader, demographic, measurement, scaler, output_scaler
+    return train_loader, val_loader, test_loader, demographic, female_measurement, scaler, output_scaler
 
-handle_split_data()
+
 

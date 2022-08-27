@@ -106,7 +106,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 def test_model(test_loader,features_column,target_column):
     print("Testing")
 
-    test_model= Model(4,5)
+    test_model= Model(len(features_column),len(target_column))
     test_model.load_state_dict(torch.load("multiple_model_female.pt"))
     test_model.eval()
     test_loss = 0.0
@@ -131,18 +131,34 @@ def test_model(test_loader,features_column,target_column):
     twoD_pred = [elem for twod in all_pred for elem in twod]
     twoD_target = [elem for twod in all_target for elem in twod]
 
+    twoD_pred=np.array(twoD_pred)
+    twoD_target=np.array(twoD_target)
 
-    print(twoD_target)
-    print(twoD_pred)
-    # avg_error = output_scaler.inverse_transform(np.array(avg_values))
+
+    outerInseam=np.subtract(twoD_pred[:,8],twoD_pred[:,11])
+    innerInseam=np.subtract(twoD_pred[:,5],twoD_pred[:,12])
+    outerInseam=np.reshape(outerInseam,(-1,1))
+    innerInseam=np.reshape(innerInseam,(-1,1))
+
+
     print("avg_values", avg_values / 10)
+    target_column_prediction=target_column.copy()
+    target_column_prediction.append(outer_inseam)
+    target_column_prediction.append(inner_inseam)
 
+    twoD_pred=np.append(twoD_pred,outerInseam,axis=1)
+
+    twoD_pred=np.append(twoD_pred,innerInseam,axis=1)
+    twoD_pred=twoD_pred/10
+    twoD_target=twoD_target/10
+    # twoD_pred = list(map(lambda x: x/10, twoD_pred)) #convert mm to cm
+    # twoD_target = list(map(lambda x: x/10, twoD_target)) #convert mm to cm
 
     with open('female_pred.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the header
-        writer.writerow(target_column)
+        writer.writerow(target_column_prediction)
 
         # write multiple rows
         writer.writerows(twoD_pred)
@@ -155,6 +171,7 @@ def test_model(test_loader,features_column,target_column):
 
         # write multiple rows
         writer.writerows(twoD_target)
+
 
 if __name__ == '__main__':
 
@@ -181,6 +198,7 @@ if __name__ == '__main__':
     # axis[0].ylabel("Loss")
     # plt.plot(trainLosses, label='Training Loss')
     # plt.plot(validLosses, label='Validation Loss')
+
     plt.xlabel('epochs', fontsize=18)
     plt.ylabel('average loss', fontsize=16)
     plt.plot (trainLosses, label='Training Loss')
