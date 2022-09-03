@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import multiple_dataloader
-
+import optuna
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader
 from pickle import load
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
+
+import utils
 from constant import *
 from nn import Model
 # from tqdm import tqdm
@@ -37,7 +39,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
             output, _ = model(features)
 
             # target size: 34,5
-            loss = criterion(output, target)
+            loss = criterion(target, output)
 
             # print(output[:, 0])
             # print("------------------------------------------------------")
@@ -66,7 +68,7 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
                 output, _ = model(features)
 
                 target = target.float()
-                loss = criterion(output, target)
+                loss = criterion(target, output)
                 # writer_validation.add_scalar('valid', loss, i)
                 # writer_validation.flush()
                 # update average validation loss
@@ -96,7 +98,8 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 
         if valid_loss <= valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}). Saving model ...'.format(valid_loss_min, valid_loss))
-            torch.save(model.state_dict(), 'multiple_model_DI.pt')
+            # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
+            torch.save(model, 'multiple_model_with_shape(measured).pt')
             valid_loss_min = valid_loss
 
     # writer.close()
@@ -167,8 +170,9 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 def test_model(test_loader,features_column,target_column):
     print("Testing")
 
-    test_model= Model(len(features_column),len(target_column))
-    test_model.load_state_dict(torch.load("multiple_model_DI.pt"))
+    # test_model= Model(len(features_column),len(target_column))
+    # test_model.load_state_dict(torch.load("multiple_model_with_shape(measured).pt"))
+    test_model=torch.load("multiple_model_with_shape(measured).pt")
     test_model.eval()
     test_loss = 0.0
     avg_values = []
@@ -235,7 +239,7 @@ def test_model(test_loader,features_column,target_column):
     twoD_pred=np.append(twoD_pred,innerInseam,axis=1)
     twoD_pred = twoD_pred / 10
     twoD_target = twoD_target / 10
-    with open('male_pred(measured_weight)_without_shape.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('male_pred_with_shape(measured).csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the header
@@ -244,7 +248,7 @@ def test_model(test_loader,features_column,target_column):
         # write multiple rows
         writer.writerows(twoD_pred)
 
-    with open('male_target(measured_weight)_without_shape.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('male_target_with_shape(measured).csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the header
@@ -252,37 +256,141 @@ def test_model(test_loader,features_column,target_column):
 
         # write multiple rows
         writer.writerows(twoD_target)
+def objective(trial):
+        params = {
+            "num_layers": trial.suggest_int("num_layers", 8, 10),
+            "hidden_size": trial.suggest_int("hidden_size", 5, 10),
 
-if __name__ == '__main__':
+            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-6, 1e-3),
+            # 'optimizer':trial.suggst_
 
-    train_loader,val_loader,test_loader,features,target,scaler,output_scaler=handle_split_data()
+        }
+        all_losses=[]
+        for f in range(5):
+            temp_loss=run_training(f,params,save_model=False)
+            all_losses.append(temp_loss)
+        return np.mean(all_losses)
+def run_training(fold,params,save_model=False):
+    train_loader, val_loader, test_loader, features, target, scaler, output_scaler = handle_split_data()
+    # input_size, output_size, hidden_size = 10, dropout = 0.25, nlayers = 4
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
 
 
+    model = Model(
+        input_size=len(features),
+        output_size=len(target),
+        hidden_size=params["hidden_size"],
+        nlayers=params["num_layers"]
+    )
+    criterion = nn.L1Loss()
+    if use_cuda:
+        model=model.cuda()
+        criterion=criterion.cuda()
 
-    model=Model(len(features),len(target))
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.L1Loss()  # Mean Absolute Error
 
-    #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
+    # lr = 0.01
+    optimizer = optim.SGD(model.parameters(), lr=params["learning_rate"])
+     # Mean Absolute Error
 
+    eng = utils.Engine(model, optimizer,criterion,device)
+    # best_loss = np.inf
+    valid_loss_min = np.Inf
+    trainLosses = []
+    validLosses = []
+    EPOCHS = 20
+    hipLosses = []
+    for epoch in range(EPOCHS):
+        train_loss, hip_loss = eng.train(train_loader)
+        valid_loss = eng.eval(val_loader)
+        hipLosses.append(hip_loss)
+        trainLosses.append(train_loss)
+        validLosses.append(valid_loss)
+        print('Epoch {}/{} \t Training Loss: {:.6f} \t Validation Loss: {:.6f}'.format(epoch + 1, EPOCHS, train_loss,
+                                                                                        valid_loss))
+        if valid_loss <= valid_loss_min:
+            print('Validation loss decreased ({:.6f} --> {:.6f}). Saving model ...'.format(valid_loss_min, valid_loss))
+            # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
+            if save_model:
+                torch.save(model, 'multiple_model_with_shape(measured).pt')
+            valid_loss_min = valid_loss
 
-    trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
-
-
-    # test_model(X_test, y_test, scaler, output_scaler,model,criterion)
-    test_model(test_loader,features,target)
-    # axis[0].plot(trainLosses, label="Training Loss")
-    # axis[0].plot(validLosses, label="Validation Loss")
-    # axis[1].plot(hiplosses,label="Hip Loss")
-    # axis[0].xlabel("Epochs")
-    # axis[0].ylabel("Loss")
-    # plt.plot(trainLosses, label='Training Loss')
-    # plt.plot(validLosses, label='Validation Loss')
-
-    #
+    eng.test(test_loader, target)
+    plt.title("")
     plt.xlabel('epochs', fontsize=18)
     plt.ylabel('average loss', fontsize=16)
-    plt.plot (trainLosses, label='Training Loss')
-    plt.plot (validLosses, label='Validation Loss')
+    plt.plot(trainLosses, label='Training Loss')
+    plt.plot(validLosses, label='Validation Loss')
     plt.legend()
     plt.show()
+    return valid_loss_min
+
+if __name__ == '__main__':
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+    print(device)
+    study = optuna.create_study(direction='minimize')
+    study.optimize(objective, n_trials=10)
+    print("Best trial:")
+    trial_=study.best_trial
+    print(trial_.values)
+    #for best parameter save
+    # scores=0
+    # for j in range(5):
+    #     scr=run_training(j,trial_.params,save_model=True)
+    #     scores+=scr
+    # print(scores)
+    # run_training(fold=0)
+    # train_loader,val_loader,test_loader,features,target,scaler,output_scaler=handle_split_data()
+    #
+    #
+    #
+    #
+    # model=Model(len(features),len(target))
+    # optimizer = optim.SGD(model.parameters(), lr=0.01)
+    # criterion = nn.L1Loss()  # Mean Absolute Error
+    # eng = utils.Engine(model,optimizer)
+    # best_loss= np.inf
+    # valid_loss_min = np.Inf
+    # trainLosses = []
+    # validLosses = []
+    # EPOCHS=100
+    # hipLosses = []
+    # for epoch in range(EPOCHS):
+    #     train_loss,hip_loss=eng.train(train_loader)
+    #     valid_loss=eng.eval(val_loader)
+    #     hipLosses.append(hip_loss)
+    #     trainLosses.append(train_loss)
+    #     validLosses.append(valid_loss)
+    #     print('Epoch {}/{} \t Training Loss: {:.6f} \t Validation Loss: {:.6f}'.format(epoch + 1, EPOCHS, train_loss,
+    #                                                                                    valid_loss))
+    #     if valid_loss <= valid_loss_min:
+    #         print('Validation loss decreased ({:.6f} --> {:.6f}). Saving model ...'.format(valid_loss_min, valid_loss))
+    #         # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
+    #         torch.save(model, 'multiple_model_with_shape(measured).pt')
+    #         valid_loss_min = valid_loss
+    #
+    # eng.test(test_loader,target)
+    # #figure, axis = plt.subplots(1, 2, figsize=(10, 10))
+    #
+    #
+    # # trainLosses, validLosses, hiplosses = TrainModel(model, criterion, optimizer, train_loader, val_loader)
+    #
+    #
+    # # test_model(X_test, y_test, scaler, output_scaler,model,criterion)
+    # # test_model(test_loader,features,target)
+    # # axis[0].plot(trainLosses, label="Training Loss")
+    # # axis[0].plot(validLosses, label="Validation Loss")
+    # # axis[1].plot(hiplosses,label="Hip Loss")
+    # # axis[0].xlabel("Epochs")
+    # # axis[0].ylabel("Loss")
+    # # plt.plot(trainLosses, label='Training Loss')
+    # # plt.plot(validLosses, label='Validation Loss')
+    #
+    # #
+    # plt.xlabel('epochs', fontsize=18)
+    # plt.ylabel('average loss', fontsize=16)
+    # plt.plot (trainLosses, label='Training Loss')
+    # plt.plot (validLosses, label='Validation Loss')
+    # plt.legend()
+    # plt.show()

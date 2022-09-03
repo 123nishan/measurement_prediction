@@ -33,10 +33,12 @@ arm_length='Arm Length (Shoulder to Wrist) (mm)'
 outer_inseam='Outer Inseam'
 inner_inseam='Inner Inseam'
 inverted_triangle='Inverted Triangle'
+hourglass='Hourglass'
 rectangle='Rectangle'
 triangle='Triangle'
 
-# ,inverted_triangle,rectangle,triangle
+# ,hourglass,inverted_triangle,rectangle,triangle
+demographic_male=[ age, height, measured_weight, shoe_size,inverted_triangle,rectangle,triangle]
 female_measurement=[waist,chest,bust,neck,hip,crotch_height,thigh,shoulder_breadth,waist_floor,arm_length,upper_chest,malleolus_outer,malleolus_inner]
-demographic = [ age, height, measured_weight, shoe_size,inverted_triangle,rectangle,triangle]
+demographic = [ age, height, weight, shoe_size,hourglass,inverted_triangle,rectangle,triangle]
 measurement = [ waist,chest,neck,hip,crotch_height,thigh,shoulder_breadth,waist_floor,arm_length,upper_chest,malleolus_outer,malleolus_inner]

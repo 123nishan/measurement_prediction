@@ -7,7 +7,7 @@ from pickle import load
 from nn import Model
 # from tqdm import tqdm
 from Size.male.size_data import handle_split_data
-
+import csv
 
 def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=1000):
     train_loss = 0.0
@@ -163,23 +163,23 @@ def test_model(test_loader,features_column,target_column):
     twoD_pred = twoD_pred
     twoD_target = twoD_target
 
-    # with open('male_pred(measured_weight)_without_shape.csv', 'w', encoding='UTF8', newline='') as f:
-    #     writer = csv.writer(f)
-    #
-    #     # write the header
-    #     writer.writerow(target_column_prediction)
-    #
-    #     # write multiple rows
-    #     writer.writerows(twoD_pred)
-    #
-    # with open('male_target(measured_weight)_without_shape.csv', 'w', encoding='UTF8', newline='') as f:
-    #     writer = csv.writer(f)
-    #
-    #     # write the header
-    #     writer.writerow(target_column)
-    #
-    #     # write multiple rows
-    #     writer.writerows(twoD_target)
+    with open('size_pred_dutch.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+
+        # write the header
+        writer.writerow(target_column)
+
+        # write multiple rows
+        writer.writerows(twoD_pred)
+
+    with open('size_target_dutch.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+
+        # write the header
+        writer.writerow(target_column)
+
+        # write multiple rows
+        writer.writerows(twoD_target)
 
 if __name__ == '__main__':
 
@@ -208,10 +208,10 @@ if __name__ == '__main__':
     # plt.plot(validLosses, label='Validation Loss')
 
     #
-    plt.xlabel('epochs', fontsize=18)
-    plt.ylabel('average loss', fontsize=16)
-    plt.plot (trainLosses, label='Training Loss')
-    plt.plot (validLosses, label='Validation Loss')
-    plt.legend()
-    plt.show()
+    # plt.xlabel('epochs', fontsize=18)
+    # plt.ylabel('average loss', fontsize=16)
+    # plt.plot (trainLosses, label='Training Loss')
+    # plt.plot (validLosses, label='Validation Loss')
+    # plt.legend()
+    # plt.show()
 

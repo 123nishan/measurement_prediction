@@ -57,13 +57,13 @@ def handle_split_data():
 
 
 
-    X_train=pd.read_csv("./split_data/X_train.csv",skipinitialspace=True,usecols=demographic)
+    X_train=pd.read_csv("./split_data/X_train.csv",skipinitialspace=True,usecols=demographic_male)
     y_train=pd.read_csv("./split_data/y_train.csv",skipinitialspace=True,usecols=measurement)
 
-    X_val=pd.read_csv("./split_data/X_val.csv",skipinitialspace=True,usecols=demographic)
+    X_val=pd.read_csv("./split_data/X_val.csv",skipinitialspace=True,usecols=demographic_male)
     y_val=pd.read_csv("./split_data/y_val.csv",skipinitialspace=True,usecols=measurement)
 
-    X_test=pd.read_csv("./split_data/X_test.csv",skipinitialspace=True,usecols=demographic)
+    X_test=pd.read_csv("./split_data/X_test.csv",skipinitialspace=True,usecols=demographic_male)
     y_test=pd.read_csv("./split_data/y_test.csv",skipinitialspace=True,usecols=measurement)
 
     scaler=preprocessing.StandardScaler()
@@ -100,5 +100,5 @@ def handle_split_data():
     dump(scaler, open('multiple_scaler.pkl', 'wb'))
     dump(output_scaler, open('multiple_output_scaler.pkl', 'wb'))
 
-    return train_loader,val_loader,test_loader,demographic,measurement,scaler,output_scaler
+    return train_loader,val_loader,test_loader,demographic_male,measurement,scaler,output_scaler
 
