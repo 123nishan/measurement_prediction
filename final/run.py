@@ -200,10 +200,18 @@ def test(test_loader,target_column,device):
         twoD_pred = np.array(twoD_pred)
         twoD_target = np.array(twoD_target)
 
-        outerInseam = np.subtract(twoD_pred[:, 7], twoD_pred[:, 10])
-        innerInseam = np.subtract(twoD_pred[:, 4], twoD_pred[:, 11])
-        outerInseam = np.reshape(outerInseam, (-1, 1))
-        innerInseam = np.reshape(innerInseam, (-1, 1))
+        if gender.lower()=='female':
+            outerInseam = np.subtract(twoD_pred[:, 8], twoD_pred[:, 11])
+            innerInseam = np.subtract(twoD_pred[:, 5], twoD_pred[:, 12])
+            outerInseam = np.reshape(outerInseam, (-1, 1))
+            innerInseam = np.reshape(innerInseam, (-1, 1))
+        else:
+            outerInseam = np.subtract(twoD_pred[:, 7], twoD_pred[:, 10])
+            innerInseam = np.subtract(twoD_pred[:, 4], twoD_pred[:, 11])
+            outerInseam = np.reshape(outerInseam, (-1, 1))
+            innerInseam = np.reshape(innerInseam, (-1, 1))
+
+
 
         #
         # print(twoD_target)
