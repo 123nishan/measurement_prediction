@@ -9,15 +9,16 @@ from pickle import dump
 
 
 
-def handle_split_data(demographic_column,measurement_column):
-    X_train=pd.read_csv("./split_data/X_train.csv",skipinitialspace=True,usecols=demographic_column)
-    y_train=pd.read_csv("./split_data/y_train.csv",skipinitialspace=True,usecols=measurement_column)
+def handle_split_data(gender,demographic_column,measurement_column):
 
-    X_val=pd.read_csv("./split_data/X_val.csv",skipinitialspace=True,usecols=demographic_column)
-    y_val=pd.read_csv("./split_data/y_val.csv",skipinitialspace=True,usecols=measurement_column)
+    X_train=pd.read_csv("./"+gender+"/X_train.csv",skipinitialspace=True,usecols=demographic_column)
+    y_train=pd.read_csv("./"+gender+"/y_train.csv",skipinitialspace=True,usecols=measurement_column)
 
-    X_test=pd.read_csv("./split_data/X_test.csv",skipinitialspace=True,usecols=demographic_column)
-    y_test=pd.read_csv("./split_data/y_test.csv",skipinitialspace=True,usecols=measurement_column)
+    X_val=pd.read_csv("./"+gender+"/X_val.csv",skipinitialspace=True,usecols=demographic_column)
+    y_val=pd.read_csv("./"+gender+"/y_val.csv",skipinitialspace=True,usecols=measurement_column)
+
+    X_test=pd.read_csv("./"+gender+"/X_test.csv",skipinitialspace=True,usecols=demographic_column)
+    y_test=pd.read_csv("./"+gender+"/y_test.csv",skipinitialspace=True,usecols=measurement_column)
 
     scaler=preprocessing.StandardScaler()
     output_scaler=preprocessing.StandardScaler()
@@ -42,9 +43,9 @@ def handle_split_data(demographic_column,measurement_column):
     Valid_data = pd.concat([X_val_scaled_data, pd.DataFrame(y_val_scaled, columns=y_train.columns)], axis=1)
     Test_data= pd.concat([X_test_scaled_data, pd.DataFrame(y_test.values, columns=y_train.columns)], axis=1)
 
-    train_data = dataloader.CustomDataset(Train_data)
-    val_data = dataloader.CustomDataset(Valid_data)
-    test_data = dataloader.CustomDataset(Test_data)
+    train_data = dataloader.CustomDataset(Train_data,measurement_column)
+    val_data = dataloader.CustomDataset(Valid_data,measurement_column)
+    test_data = dataloader.CustomDataset(Test_data,measurement_column)
 
     train_loader = DataLoader(dataset=train_data, batch_size=32, shuffle=False)
     val_loader = DataLoader(dataset=val_data, batch_size=32, shuffle=False)
