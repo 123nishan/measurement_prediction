@@ -51,8 +51,8 @@ def handle_split_data(gender,demographic_column,measurement_column):
     val_loader = DataLoader(dataset=val_data, batch_size=32, shuffle=False)
     test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=False)
 
-    dump(scaler, open('multiple_scaler.pkl', 'wb'))
-    dump(output_scaler, open('multiple_output_scaler.pkl', 'wb'))
+    dump(scaler, open('./'+gender.lower()+'/scaler.pkl', 'wb'))
+    dump(output_scaler, open('./'+gender.lower()+'/output_scaler.pkl', 'wb'))
 
     return train_loader,val_loader,test_loader,demographic_column,measurement_column,scaler,output_scaler
 

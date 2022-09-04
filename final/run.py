@@ -99,7 +99,8 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
         if valid_loss <= valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}). Saving model ...'.format(valid_loss_min, valid_loss))
             # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
-            torch.save(model, 'multiple_model_with_shape(measured).pt')
+            # torch.save(model, 'multiple_model_with_shape(measured).pt')
+            torch.save(model, './'+gender+'/results/model.pt')
             valid_loss_min = valid_loss
 
     # writer.close()
@@ -171,13 +172,15 @@ def test(test_loader,target_column,device):
 
         # test_model= Model(len(features_column),len(target_column))
         # test_model.load_state_dict(torch.load("multiple_model_with_shape(measured).pt"))
-        test_model = torch.load("multiple_model_with_shape(measured).pt")
+        # test_model = torch.load("multiple_model_with_shape(measured).pt")
+        test_model = torch.load('./' + gender + '/results/model.pt')
+
         test_model.eval()
         test_loss = 0.0
         avg_values = []
         all_pred = []
         all_target = []
-        output_scaler = load(open('multiple_output_scaler.pkl', 'rb'))
+        output_scaler = load(open('./'+gender.lower()+'/output_scaler.pkl', 'rb'))
         with torch.no_grad():
             for batch_idx, (features, target) in enumerate(test_loader):
                 features=features.to(device)
@@ -227,7 +230,7 @@ def test(test_loader,target_column,device):
         twoD_pred = np.append(twoD_pred, innerInseam, axis=1)
         twoD_pred = twoD_pred / 10
         twoD_target = twoD_target / 10
-        with open('pred.csv', 'w', encoding='UTF8', newline='') as f:
+        with open('./'+gender+'/results/pred.csv', 'w', encoding='UTF8', newline='') as f:
             writer = csv.writer(f)
 
             # write the header
@@ -236,7 +239,7 @@ def test(test_loader,target_column,device):
             # write multiple rows
             writer.writerows(twoD_pred)
 
-        with open('target.csv', 'w', encoding='UTF8', newline='') as f:
+        with open('./'+gender+'/results/target.csv', 'w', encoding='UTF8', newline='') as f:
             writer = csv.writer(f)
 
             # write the header
@@ -395,7 +398,7 @@ def run_training(params,save_model=False):
             # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
             if save_model:
                 print("SAVING MODEL")
-                torch.save(model, 'multiple_model_with_shape(measured).pt')
+                torch.save(model, './'+gender+'/results/model.pt')
             valid_loss_min = valid_loss
 
     # eng.test(test_loader, target)

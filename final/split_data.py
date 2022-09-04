@@ -179,4 +179,5 @@ def get_data(Gender,body_shape_constraint=True):
 
     return True
 
-
+get_data('Male',body_shape_constraint=True)
+get_data('Female',body_shape_constraint=True)
