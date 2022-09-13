@@ -60,6 +60,7 @@ female_measurement_column=[subject_number,waist,chest,bust,neck,hip,crotch_heigh
 female_italy_measurements_column=[subject_number,waist,chest,bust,neck,hip,crotch_height,thigh,shoulder_breadth,waist_floor,arm_length,italy_upper_chest,measured_weight]
 
 # ,hourglass,inverted_triangle,rectangle,triangle
+# ,inverted_triangle,rectangle,triangle
 male_inputs_list=[ age, height, weight, shoe_size,inverted_triangle,rectangle,triangle]
 female_output_list=[waist,chest,bust,neck,hip,crotch_height,thigh,shoulder_breadth,waist_floor,arm_length,upper_chest,malleolus_outer,malleolus_inner]
 female_input_list = [ age, height, weight, shoe_size,hourglass,inverted_triangle,rectangle,triangle]

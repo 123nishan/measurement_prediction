@@ -176,6 +176,7 @@ def test(test_loader,target_column,device):
         test_model = torch.load('./' + gender + '/results/model.pt')
 
         test_model.eval()
+
         test_loss = 0.0
         avg_values = []
         all_pred = []
@@ -338,10 +339,11 @@ def test(test_loader,target_column,device):
 #         writer.writerows(twoD_target)
 def objective(trial):
         params = {
-            "num_layers": trial.suggest_int("num_layers", 2, 5),
+            "num_layers": trial.suggest_int("num_layers", 3, 10),
             "hidden_size": trial.suggest_int("hidden_size", 5, 10),
+            'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
 
-            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-5, 1e-1),
+            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-2, 1e-1),
             # 'optimizer':trial.suggst_
 
         }
@@ -375,7 +377,8 @@ def run_training(params,save_model=False):
 
 
     # lr = 0.01
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
+    # optimizer = optim.params["optimizer"](model.parameters(), lr=0.01)
+    optimizer=getattr(optim,params['optimizer'])(model.parameters(),lr=params["learning_rate"])
      # Mean Absolute Error
 
     eng = utils.Engine(model, optimizer,criterion,device)
@@ -391,10 +394,14 @@ def run_training(params,save_model=False):
         hipLosses.append(hip_loss)
         trainLosses.append(train_loss)
         validLosses.append(valid_loss)
-        print('Epoch {}/{} \t Training Loss: {:.6f} \t Validation Loss: {:.6f}'.format(epoch + 1, EPOCHS, train_loss,
+        if epoch==99:
+             print('Epoch {}/{} \t Training Loss: {:.6f} \t Validation Loss: {:.6f}'.format(epoch + 1, EPOCHS, train_loss,
+                                                                                        valid_loss))
+        if epoch==499:
+             print('Epoch {}/{} \t Training Loss: {:.6f} \t Validation Loss: {:.6f}'.format(epoch + 1, EPOCHS, train_loss,
                                                                                         valid_loss))
         if valid_loss <= valid_loss_min:
-            print('Validation loss decreased ({:.6f} --> {:.6f}). '.format(valid_loss_min, valid_loss))
+            # print('Validation loss decreased ({:.6f} --> {:.6f}). '.format(valid_loss_min, valid_loss))
             # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
             if save_model:
                 print("SAVING MODEL")
@@ -402,13 +409,13 @@ def run_training(params,save_model=False):
             valid_loss_min = valid_loss
 
     # eng.test(test_loader, target)
-    # plt.title("")
-    # plt.xlabel('epochs', fontsize=18)
-    # plt.ylabel('average loss', fontsize=16)
-    # plt.plot(trainLosses, label='Training Loss')
-    # plt.plot(validLosses, label='Validation Loss')
-    # plt.legend()
-    # plt.show()
+    plt.title(gender+" with body contraints:",)
+    plt.xlabel('epochs', fontsize=18)
+    plt.ylabel('average loss', fontsize=16)
+    plt.plot(trainLosses, label='Training Loss')
+    plt.plot(validLosses, label='Validation Loss')
+    plt.legend()
+    plt.show()
     return valid_loss
 
 
@@ -428,17 +435,40 @@ if __name__ == '__main__':
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    print(device)
-    study = optuna.create_study(direction='minimize')
-    study.optimize(objective, n_trials=10)
-    print("Best trial:")
-    trial_=study.best_trial
-    print(trial_.values)
-    print(trial_.params)
+    # print(device)
+    # study = optuna.create_study(direction='minimize')
+    # study.optimize(objective, n_trials=10)
+    # print("Best trial:")
+    # trial_=study.best_trial
+    #
+    # for key, value in trial_.params.items():
+    #     print("{}: {}".format(key, value))
+    # run_training(trial_.params, save_model=True)
+    best_male = {
+            "num_layers": 3,
+            "hidden_size": 5,
+            'optimizer':"SGD",
+
+            'learning_rate': 0.0707,
+            # 'optimizer':trial.suggst_
+
+        }
+    # best_female = {
+    #     "num_layers": trial.suggest_int("num_layers", 2, 5),
+    #     "hidden_size": trial.suggest_int("hidden_size", 5, 10),
+    #     'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD"]),
+    #
+    #     'learning_rate': trial.suggest_loguniform('learning_rate', 1e-2, 1e-1),
+    #     # 'optimizer':trial.suggst_
+    #
+    # }
 
 
-    run_training(trial_.params, save_model=True)
-
+#for testing and without hyper parameter tuninig
+    run_training(best_male, save_model=True)
+    train_loader, val_loader, test_loader, features, target, scaler, output_scaler = handle_split_data(
+        gender.lower(), demographic_col, measurement_col)
+    test(test_loader, target, device)
 
 
     #for best parameter save
@@ -448,9 +478,7 @@ if __name__ == '__main__':
     #     scores+=scr
     # print(scores/5)
 
-    train_loader, val_loader, test_loader, features, target, scaler, output_scaler = handle_split_data(
-        gender.lower(),demographic_col, measurement_col)
-    test(test_loader,target,device)
+
     # run_training(fold=0)
     # train_loader,val_loader,test_loader,features,target,scaler,output_scaler=handle_split_data()
     #
