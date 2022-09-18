@@ -98,9 +98,9 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 
         if valid_loss <= valid_loss_min:
             print('Validation loss decreased ({:.6f} --> {:.6f}). Saving model ...'.format(valid_loss_min, valid_loss))
-            # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
+            torch.save(model.state_dict(), './'+gender+'/results/checkpoint.pt')
             # torch.save(model, 'multiple_model_with_shape(measured).pt')
-            torch.save(model, './'+gender+'/results/model.pt')
+            # torch.save(model, './'+gender+'/results/model.pt')
             valid_loss_min = valid_loss
 
     # writer.close()
@@ -167,13 +167,18 @@ def TrainModel(model, criterion, optimizer, train_loader, test_loader, epochs=10
 #     print(twoD_pred)
 #     #avg_error = output_scaler.inverse_transform(np.array(avg_values))
 #     print("avg_values",avg_values/10)
-def test(test_loader,target_column,device):
+def test(test_loader,target_column,device,features_column,params):
         print("Testing")
-
+        test_model = Model(
+            input_size=len(features_column),
+            output_size=len(target_column),
+            hidden_size=params["hidden_size"],
+            nlayers=params["num_layers"]
+        )
         # test_model= Model(len(features_column),len(target_column))
-        # test_model.load_state_dict(torch.load("multiple_model_with_shape(measured).pt"))
+        test_model.load_state_dict(torch.load('./' + gender + '/results/checkpoint.pt'))
         # test_model = torch.load("multiple_model_with_shape(measured).pt")
-        test_model = torch.load('./' + gender + '/results/model.pt')
+        # test_model = torch.load('./' + gender + '/results/checkpoint.pt')
 
         test_model.eval()
 
@@ -405,7 +410,7 @@ def run_training(params,save_model=False):
             # torch.save(model.state_dict(), 'multiple_model_with_shape(measured).pt')
             if save_model:
                 print("SAVING MODEL")
-                torch.save(model, './'+gender+'/results/model.pt')
+                torch.save(model.state_dict(), './'+gender+'/results/checkpoint.pt')
             valid_loss_min = valid_loss
 
     # eng.test(test_loader, target)
@@ -433,8 +438,9 @@ if __name__ == '__main__':
     #
     #
 
-    use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
+    # use_cuda = torch.cuda.is_available()
+    # device = torch.device("cuda" if use_cuda else "cpu")
+    device=torch.device("cpu")
     # print(device)
     # study = optuna.create_study(direction='minimize')
     # study.optimize(objective, n_trials=10)
@@ -446,10 +452,10 @@ if __name__ == '__main__':
     # run_training(trial_.params, save_model=True)
     best_male = {
             "num_layers": 3,
-            "hidden_size": 5,
-            'optimizer':"SGD",
+            "hidden_size": 10,
+            'optimizer':"Adam",
 
-            'learning_rate': 0.0707,
+            'learning_rate':  0.0397,
             # 'optimizer':trial.suggst_
 
         }
@@ -468,7 +474,14 @@ if __name__ == '__main__':
     run_training(best_male, save_model=True)
     train_loader, val_loader, test_loader, features, target, scaler, output_scaler = handle_split_data(
         gender.lower(), demographic_col, measurement_col)
-    test(test_loader, target, device)
+    # model = Model(
+    #     input_size=len(features),
+    #     output_size=len(target),
+    #     hidden_size=best_male["hidden_size"],
+    #     nlayers=best_male["num_layers"]
+    # )
+    # print(model)
+    test(test_loader, target, device,features,best_male)
 
 
     #for best parameter save

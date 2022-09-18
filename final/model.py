@@ -9,11 +9,11 @@ class Model(nn.Module):
         for _ in range(nlayers):
             if len(layers) == 0:
                 layers.append(nn.Linear(input_size,hidden_size))
-                # layers.append(nn.BatchNorm1d(hidden_size))
+                layers.append(nn.BatchNorm1d(hidden_size))
                 layers.append(nn.ReLU())
             else:
                 layers.append(nn.Linear(hidden_size,hidden_size))
-                # layers.append(nn.BatchNorm1d(hidden_size))
+                layers.append(nn.BatchNorm1d(hidden_size))
                 layers.append(nn.ReLU())
         layers.append(nn.Linear(hidden_size,output_size))
         self.model = nn.Sequential(*layers)
